@@ -5,47 +5,45 @@ using OrderImporter.Common.Exceptions;
 
 namespace OrderImporter
 {
-    internal class Program
+    public class Program
     {
         static async Task Main(string[] args)
         {
             var host = DIConfiguration.CreateHostBuilder(args).Build();
 
-            using (var scope = host.Services.CreateScope())
+            using var scope = host.Services.CreateScope();
+            var services = scope.ServiceProvider;
+
+            try
             {
-                var services = scope.ServiceProvider;
+                var importService = services.GetRequiredService<IImportOrdersService>();
+                var exportService = services.GetRequiredService<IExportOrdersService>();
 
-                try
-                {
-                    var importService = services.GetRequiredService<IImportOrdersService>();
-                    var exportService = services.GetRequiredService<IExportOrdersService>();
+                Console.WriteLine("Iniciando la recuperación de pedidos.");
+                await importService.ImportOrdersAsync();
+                Console.WriteLine("Recuperación de pedidos finalizada.");
 
-                    Console.WriteLine("Iniciando la recuperación de pedidos.");
-                    await importService.ImportOrdersAsync();
-                    Console.WriteLine("Recuperación de pedidos finalizada.");
+                Console.WriteLine("Iniciando la exportación de pedidos.");
+                await exportService.ExportOrdersAsync();
+                Console.WriteLine("Exportación de pedidos finalizada.");
 
-                    Console.WriteLine("Iniciando la exportación de pedidos.");
-                    await exportService.ExportOrdersAsync();
-                    Console.WriteLine("Exportación de pedidos finalizada.");
-                    
-                    Console.WriteLine($"Consulte los ficheros exportados en la ruta {AppDomain.CurrentDomain.BaseDirectory}");
-                }
-                catch (OrderImporterException aex)
-                {
-                    Console.WriteLine("**************************************************");
-                    Console.WriteLine($"Ha ocurrido un error! \n { aex.Message }");
-                    Console.WriteLine("**************************************************");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("**************************************************");
-                    Console.WriteLine($"Ha ocurrido un error no controlado! \n { ex.Message }");
-                    Console.WriteLine("**************************************************");
-                }
-                finally
-                {
-                    Console.ReadKey();
-                }
+                Console.WriteLine($"Consulte los ficheros exportados en la ruta {AppDomain.CurrentDomain.BaseDirectory}");
+            }
+            catch (OrderImporterException aex)
+            {
+                Console.WriteLine("**************************************************");
+                Console.WriteLine($"Ha ocurrido un error! \n {aex.Message}");
+                Console.WriteLine("**************************************************");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("**************************************************");
+                Console.WriteLine($"Ha ocurrido un error no controlado! \n {ex.Message}");
+                Console.WriteLine("**************************************************");
+            }
+            finally
+            {
+                Console.ReadKey();
             }
         }
     }

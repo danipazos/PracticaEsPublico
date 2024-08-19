@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace OrderImporter.Common.Helpers
 {
-    internal class CustomDateTimeConverter : JsonConverter
+    public sealed class CustomDateTimeConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {

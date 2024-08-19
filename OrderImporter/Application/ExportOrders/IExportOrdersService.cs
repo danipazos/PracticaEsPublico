@@ -1,7 +1,7 @@
 ﻿
 namespace OrderImporter.Application.ExportOrders
 {
-    internal interface IExportOrdersService
+    public interface IExportOrdersService
     {
         Task ExportOrdersAsync();
     }

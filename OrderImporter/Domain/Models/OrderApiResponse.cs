@@ -3,18 +3,18 @@ using OrderImporter.Common.Helpers;
 
 namespace OrderImporter.Domain.Models
 {
-    public class OrderApiResponse
+    public sealed class OrderApiResponse
     {
         public List<OrderDTO> Content { get; set; }
         public Links Links { get; set; }
     }
 
-    public class Links
+    public sealed class Links
     {
         public string Next { get; set; }
     }
 
-    public class OrderDTO
+    public sealed class OrderDTO
     {
         public string Uuid { get; set; }
      

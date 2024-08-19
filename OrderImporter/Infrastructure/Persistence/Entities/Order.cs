@@ -24,7 +24,7 @@ namespace OrderImporter.Infrastructure.Persistence.Entities
 
         public virtual ICollection<OrderError> Errors { get; set; }
 
-        internal static Order FromModel(Domain.Models.OrderModel order)
+        public static Order FromModel(Domain.Models.OrderModel order)
         {
             return new Order
             {
@@ -46,7 +46,7 @@ namespace OrderImporter.Infrastructure.Persistence.Entities
             };
         }
 
-        internal object GetTypeValue(string property)
+        public object GetTypeValue(string property)
         {
             var propertyInfo = GetType().GetProperty(property);
 

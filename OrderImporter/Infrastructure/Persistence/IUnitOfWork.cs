@@ -3,7 +3,7 @@ using OrderImporter.Infrastructure.Persistence.Repositories;
 
 namespace OrderImporter.Infrastructure.Persistence
 {   
-    internal interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork : IDisposable
     {
         Task<int> SaveChangesAsync();
 

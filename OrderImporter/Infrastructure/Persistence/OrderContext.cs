@@ -3,10 +3,8 @@ using OrderImporter.Infrastructure.Persistence.Entities;
 
 namespace OrderImporter.Infrastructure.Persistence
 {
-    internal class OrderContext : DbContext
+    public sealed class OrderContext(DbContextOptions<OrderContext> options) : DbContext(options)
     {
-        public OrderContext(DbContextOptions<OrderContext> options) : base(options) { }
-
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderError> OrderErrors { get; set; }
 

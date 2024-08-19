@@ -7,24 +7,15 @@ using System.Configuration;
 
 namespace OrderImporter.Application.ExportOrders
 {
-    internal class ExportOrdersService : IExportOrdersService
+    public sealed class ExportOrdersService(IRepository<Order> orderRepository, IExportService exportSevice) : IExportOrdersService
     {
-        private readonly IRepository<Order> _orderRepository;
-        private readonly IExportService _exportSevice;
-
-        public ExportOrdersService(IRepository<Order> orderRepository, IExportService exportSevice)
-        {
-            _orderRepository = orderRepository;
-            _exportSevice = exportSevice;
-        }
-
         public async Task ExportOrdersAsync()
         {
-            var orders = _orderRepository.GetAllAsync();
-            await _exportSevice.ExportOrdersAsync(orders.OrderBy(order => order.Id));
+            var orders = orderRepository.GetAllAsync();
+            await exportSevice.ExportOrdersAsync(orders.OrderBy(order => order.Id));
 
             var orderGroupedTotals = GetTotals(orders);
-            await _exportSevice.ExportOrderTotalsAsync(orderGroupedTotals);
+            await exportSevice.ExportOrderTotalsAsync(orderGroupedTotals);
         }
 
         private List<OrderTotal> GetTotals(IEnumerable<Order> orders)

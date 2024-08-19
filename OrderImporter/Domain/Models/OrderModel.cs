@@ -1,22 +1,22 @@
 ﻿namespace OrderImporter.Domain.Models
 {
-    internal class OrderModel
+    public sealed class OrderModel
     {
-        internal long Id { get; init; }
-        internal string Uuid { get; init; }
-        internal string Priority { get; init; }
-        internal DateTime? Date { get; init; }
-        internal string Region { get; init; }
-        internal string Country { get; init; }
-        internal string ItemType { get; init; }
-        internal string SalesChannel { get; init; }
-        internal DateTime? ShipDate { get; init; }
-        internal UnitDetails Units { get; init; }
-        internal TotalDetails Totals { get; init; }
+        public long Id { get; init; }
+        public string Uuid { get; init; }
+        public string Priority { get; init; }
+        public DateTime? Date { get; init; }
+        public string Region { get; init; }
+        public string Country { get; init; }
+        public string ItemType { get; init; }
+        public string SalesChannel { get; init; }
+        public DateTime? ShipDate { get; init; }
+        public UnitDetails Units { get; init; }
+        public TotalDetails Totals { get; init; }
 
         private OrderModel() { }
                 
-        internal static OrderModel Create(OrderDTO orderResponse)
+        public static OrderModel Create(OrderDTO orderResponse)
         {
             return new OrderModel
             {
@@ -35,7 +35,7 @@
         }
     }
 
-    internal record UnitDetails(int Sold, decimal Price, decimal Cost);
+    public record UnitDetails(int Sold, decimal Price, decimal Cost);
 
-    internal record TotalDetails(decimal Revenue, decimal Cost, decimal Profit);
+    public record TotalDetails(decimal Revenue, decimal Cost, decimal Profit);
 }

@@ -8,17 +8,8 @@ using System.Configuration;
 
 namespace OrderImporter.Application.OrderImport
 {
-    internal sealed class ImportOrdersService : IImportOrdersService
+    public sealed class ImportOrdersService(IDataSource<OrderDTO> dataSource, IUnitOfWork unitOfWork) : IImportOrdersService
     {
-        private readonly IDataSource<OrderDTO> _dataSource;
-        private readonly IUnitOfWork _unitOfWork;
-
-        public ImportOrdersService(IDataSource<OrderDTO> dataSource, IUnitOfWork unitOfWork)
-        {
-            _dataSource = dataSource;
-            _unitOfWork = unitOfWork;
-        }
-
         public async Task ImportOrdersAsync()
         {
             int batchSize = int.Parse(ConfigurationManager.AppSettings["MaxBatchSize"]);
@@ -26,7 +17,7 @@ namespace OrderImporter.Application.OrderImport
 
             try
             {
-                await foreach (var orderResponses in _dataSource.GetDataAsync())
+                await foreach (var orderResponses in dataSource.GetDataAsync())
                 {
                     IEnumerable<Result<OrderModel>> orderResults = orderResponses.Select(CreateOrder);
 
@@ -39,7 +30,7 @@ namespace OrderImporter.Application.OrderImport
                     }
                 }
 
-                if (batch.Any())
+                if (batch.Count != 0)
                 {
                     await StoreOrdersInDbAsync(batch);
                 }
@@ -64,7 +55,7 @@ namespace OrderImporter.Application.OrderImport
         private async Task StoreOrdersInDbAsync(List<Result<OrderModel>> ordersToStore)
         {
             var orders = ordersToStore.Select(order => Order.FromModel(order.Value));
-            await _unitOfWork.Orders.AddRangeAsync(orders);
+            await unitOfWork.Orders.AddRangeAsync(orders);
 
             var orderErrors = ordersToStore
                 .Where(order => order.IsFailure)
@@ -73,10 +64,10 @@ namespace OrderImporter.Application.OrderImport
                 .ToList();
             if (orderErrors.Count > 0)
             {
-                await _unitOfWork.OrderErrors.AddRangeAsync(orderErrors);
+                await unitOfWork.OrderErrors.AddRangeAsync(orderErrors);
             }
 
-            await _unitOfWork.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync();
         }
     }
 }

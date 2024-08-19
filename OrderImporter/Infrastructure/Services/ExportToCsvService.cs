@@ -8,7 +8,7 @@ using System.Globalization;
 
 namespace OrderImporter.Infrastructure.Services
 {
-    internal class ExportToCsvService : IExportService
+    public sealed class ExportToCsvService : IExportService
     {
         public async Task ExportOrdersAsync(IEnumerable<Order> orders)
         {

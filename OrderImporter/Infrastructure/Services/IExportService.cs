@@ -3,7 +3,7 @@ using OrderImporter.Infrastructure.Persistence.Entities;
 
 namespace OrderImporter.Infrastructure.Services
 {
-    internal interface IExportService
+    public interface IExportService
     {
         Task ExportOrdersAsync(IEnumerable<Order> orders);
         Task ExportOrderTotalsAsync(List<OrderTotal> groupedTotals);

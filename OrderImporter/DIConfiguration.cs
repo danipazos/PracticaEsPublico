@@ -14,7 +14,7 @@ using System.Configuration;
 
 namespace OrderImporter
 {
-    internal class DIConfiguration
+    public sealed class DIConfiguration
     {
         public static IHostBuilder CreateHostBuilder(string[] args)
         {

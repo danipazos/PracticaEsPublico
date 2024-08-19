@@ -11,7 +11,7 @@ namespace OrderImporter.Infrastructure.Persistence.Entities
         public string Error { get; set; }       
     }
 
-    internal sealed class OrderErrorConfiguration : IEntityTypeConfiguration<OrderError>
+    public sealed class OrderErrorConfiguration : IEntityTypeConfiguration<OrderError>
     {
         public void Configure(EntityTypeBuilder<OrderError> builder)
         {

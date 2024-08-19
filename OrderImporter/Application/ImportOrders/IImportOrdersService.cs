@@ -1,6 +1,6 @@
 ﻿namespace OrderImporter.Application.OrderImport
 {
-    internal interface IImportOrdersService
+    public interface IImportOrdersService
     {
         Task ImportOrdersAsync();
     }

@@ -5,21 +5,11 @@ using System.Configuration;
 
 namespace OrderImporter.Infrastructure.Services
 {
-    internal class ApiDataSource : IDataSource<OrderDTO>
+    public sealed class ApiDataSource(HttpClient httpClient) : IDataSource<OrderDTO>
     {
-        private readonly HttpClient _httpClient;
-        private readonly int _pageSize;
-        private readonly string _apiUrl;
-        private readonly int _maxConcurrentRequests;
-
-        public ApiDataSource(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-
-            _apiUrl = ConfigurationManager.AppSettings["OrdersApiUrl"];
-            _pageSize = int.Parse(ConfigurationManager.AppSettings["PageSize"]);
-            _maxConcurrentRequests = int.Parse(ConfigurationManager.AppSettings["MaxConcurrentRequests"]);
-        }
+        private readonly int _pageSize = int.Parse(ConfigurationManager.AppSettings["PageSize"]);
+        private readonly string _apiUrl = ConfigurationManager.AppSettings["OrdersApiUrl"];
+        private readonly int _maxConcurrentRequests = int.Parse(ConfigurationManager.AppSettings["MaxConcurrentRequests"]);
 
         public async IAsyncEnumerable<List<OrderDTO>> GetDataAsync()
         {
@@ -58,7 +48,7 @@ namespace OrderImporter.Infrastructure.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync(url);
+                var response = await httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
                 var content = await response.Content.ReadAsStringAsync();

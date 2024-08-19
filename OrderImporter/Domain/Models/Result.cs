@@ -1,6 +1,6 @@
 ﻿namespace OrderImporter.Domain.Models
 {
-    internal sealed class Result<T>
+    public sealed class Result<T>
     {
         public bool IsSuccess { get; }
         public bool IsFailure => !IsSuccess;

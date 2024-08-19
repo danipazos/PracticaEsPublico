@@ -4,27 +4,19 @@ using OrderImporter.Infrastructure.Persistence.Repositories;
 namespace OrderImporter.Infrastructure.Persistence
 {  
 
-    internal sealed class UnitOfWork : IUnitOfWork
+    public sealed class UnitOfWork(OrderContext context, IRepository<Order> orderRepository, IRepository<OrderError> orderErrors) : IUnitOfWork
     {
-        private readonly OrderContext _context;
-        public IRepository<Order> Orders { get; }
-        public IRepository<OrderError> OrderErrors { get; }
-
-        public UnitOfWork(OrderContext context, IRepository<Order> orderRepository, IRepository<OrderError> orderErrors)
-        {
-            _context = context;
-            Orders = orderRepository;
-            OrderErrors = orderErrors;
-        }
+        public IRepository<Order> Orders { get; } = orderRepository;
+        public IRepository<OrderError> OrderErrors { get; } = orderErrors;
 
         public async Task<int> SaveChangesAsync()
         {
-            return await _context.SaveChangesAsync();
+            return await context.SaveChangesAsync();
         }
 
         public void Dispose()
         {
-            _context.Dispose();
+            context.Dispose();
         }
     }
 }

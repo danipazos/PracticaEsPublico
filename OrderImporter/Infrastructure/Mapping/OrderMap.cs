@@ -3,7 +3,7 @@ using OrderImporter.Infrastructure.Persistence.Entities;
 
 namespace OrderImporter.Infrastructure.Mapping
 {
-    internal class OrderClassMap : ClassMap<Order>
+    public sealed class OrderClassMap : ClassMap<Order>
     {
         public OrderClassMap()
         {

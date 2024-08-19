@@ -3,7 +3,7 @@ using OrderImporter.Domain.Models;
 
 namespace OrderImporter.Domain.Validations
 {
-    internal class OrderValidator : AbstractValidator<OrderModel>
+    public sealed class OrderValidator : AbstractValidator<OrderModel>
     {
         public OrderValidator()
         {

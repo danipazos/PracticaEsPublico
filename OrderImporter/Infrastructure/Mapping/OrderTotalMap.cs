@@ -3,7 +3,7 @@ using OrderImporter.Domain.Models;
 
 namespace OrderImporter.Infrastructure.Mapping
 {
-    internal class OrderTotalClassMap : ClassMap<OrderTotal>
+    public sealed class OrderTotalClassMap : ClassMap<OrderTotal>
     {
         public OrderTotalClassMap()
         {
