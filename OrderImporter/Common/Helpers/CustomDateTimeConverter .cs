@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
-using System.Configuration;
+using OrderImporter.Common.Configuration;
 using System.Globalization;
 
 namespace OrderImporter.Common.Helpers
 {
-    public sealed class CustomDateTimeConverter : JsonConverter
+    public sealed class CustomDateTimeConverter(IAppConfig appConfig) : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
@@ -19,17 +19,17 @@ namespace OrderImporter.Common.Helpers
             }
 
             string dateString = reader.Value.ToString();
-            if (DateTime.TryParseExact(dateString, ConfigurationManager.AppSettings["OriginDateFormat"], CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime result))
+            if (DateTime.TryParseExact(dateString, appConfig.OriginDateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime result))
             {
-                return DateTime.Parse(result.ToString(ConfigurationManager.AppSettings["ResultDateFormat"])).Date;
+                return DateTime.Parse(result.ToString(appConfig.ResultDateFormat)).Date;
             }
-                      
+
             return DateTime.MinValue;
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            writer.WriteValue(((DateTime)value).ToString(ConfigurationManager.AppSettings["ResultDateFormat"]));
+            writer.WriteValue(((DateTime)value).ToString(appConfig.ResultDateFormat));
         }
     }
 }

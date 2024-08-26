@@ -7,7 +7,7 @@
         public T Value { get; }
         public List<string> Errors { get; }
 
-        protected Result(bool isSuccess, T value, List<string> errors)
+        public Result(bool isSuccess, T value, List<string> errors)
         {
             IsSuccess = isSuccess;
             Value = value;

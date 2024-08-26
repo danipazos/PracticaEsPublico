@@ -17,7 +17,7 @@ namespace OrderImporter.Domain.Models
     public sealed class OrderDTO
     {
         public string Uuid { get; set; }
-     
+
         public string Id { get; set; }
 
         public string Region { get; set; }
@@ -28,9 +28,9 @@ namespace OrderImporter.Domain.Models
 
         [JsonProperty("sales_channel")]
         public string SalesChannel { get; set; }
- 
+
         public string Priority { get; set; }
-                
+
         [JsonConverter(typeof(CustomDateTimeConverter))]
         public DateTime Date { get; set; }
 

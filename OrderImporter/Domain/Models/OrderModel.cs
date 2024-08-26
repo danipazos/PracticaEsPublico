@@ -15,7 +15,7 @@
         public TotalDetails Totals { get; init; }
 
         private OrderModel() { }
-                
+
         public static OrderModel Create(OrderDTO orderResponse)
         {
             return new OrderModel

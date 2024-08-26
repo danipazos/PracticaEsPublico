@@ -1,64 +1,87 @@
 ﻿using Newtonsoft.Json;
-using OrderImporter.Common.Exceptions;
+using OrderImporter.Common.Configuration;
+using OrderImporter.Common.Log;
 using OrderImporter.Domain.Models;
-using System.Configuration;
 
 namespace OrderImporter.Infrastructure.Services
 {
-    public sealed class ApiDataSource(HttpClient httpClient) : IDataSource<OrderDTO>
+    public sealed class ApiDataSource : IDataSource<OrderDTO>
     {
-        private readonly int _pageSize = int.Parse(ConfigurationManager.AppSettings["PageSize"]);
-        private readonly string _apiUrl = ConfigurationManager.AppSettings["OrdersApiUrl"];
-        private readonly int _maxConcurrentRequests = int.Parse(ConfigurationManager.AppSettings["MaxConcurrentRequests"]);
+        private readonly HttpClient _httpClient;
+        private readonly ILog _log;
+        private readonly int _pageSize;
+        private readonly string _apiUrl;
+        private readonly int _maxConcurrentRequests;
+        private readonly SemaphoreSlim _semaphore;
+
+        public ApiDataSource(HttpClient httpClient, IAppConfig appConfig, ILog log)
+        {
+            _httpClient = httpClient;
+            _log = log;
+
+            _pageSize = appConfig.PageSize;
+            _apiUrl = appConfig.OrdersApiUrl;
+            _maxConcurrentRequests = appConfig.MaxConcurrentRequests;
+            _semaphore = new SemaphoreSlim(_maxConcurrentRequests, _maxConcurrentRequests);
+        }
 
         public async IAsyncEnumerable<List<OrderDTO>> GetDataAsync()
         {
-            int page = 0;
+            int page = 1;
+            int totalOrdersRetrieved = 0;
+            bool hasMorePages = true;
+            var startTime = DateTime.Now;
 
-            while (true)
+            _log.Info($"Iniciando recuperación de pedidos. Tamaño de página: {_pageSize}, Solicitudes concurrentes máximas: {_maxConcurrentRequests}");
+
+            while (hasMorePages)
             {
-                var tasks = new List<Task<OrderApiResponse>>();
+                _log.Info($"Recuperando los pedidos desde la pagina {page} hasta {page + _maxConcurrentRequests}.");
 
-                for (int i = 0; i < _maxConcurrentRequests; i++)
+                var tasks = new List<Task<OrderApiResponse>>();
+                for (int i = 0; i < _maxConcurrentRequests && hasMorePages; i++)
                 {
-                    var url = $"{_apiUrl}?page={page + i}&max-per-page={_pageSize}";
-                    tasks.Add(GetOrdersAsync(url));
+                    int currentPage = page + i;
+                    tasks.Add(GetOrdersAsync(currentPage));
                 }
 
-                OrderApiResponse[] orderResults = await Task.WhenAll(tasks);
-
-                foreach (var order in orderResults)
+                while (tasks.Count > 0)
                 {
-                    yield return order.Content;
-                    if (order?.Links?.Next == null)
+                    Task<OrderApiResponse> completedTask = await Task.WhenAny(tasks);
+                    tasks.Remove(completedTask);
+
+                    OrderApiResponse result = await completedTask;
+                    if (result?.Content != null)
                     {
-                        yield break;
+                        totalOrdersRetrieved += result.Content.Count;
+                        yield return result.Content;
                     }
+
+                    hasMorePages = result?.Links?.Next != null;
                 }
 
                 page += _maxConcurrentRequests;
-                if (orderResults.All(order => order?.Links?.Next == null))
-                {
-                    yield break; 
-                }
             }
+
+            _log.Info($"Recuperación de pedidos completada. Total de pedidos: {totalOrdersRetrieved}. Tiempo total: {(DateTime.Now - startTime).TotalSeconds:F2} segundos");
         }
 
-        private async Task<OrderApiResponse> GetOrdersAsync(string url)
+        private async Task<OrderApiResponse> GetOrdersAsync(int currentPage)
         {
-            try
-            {
-                var response = await httpClient.GetAsync(url);
-                response.EnsureSuccessStatusCode();
+            string url = $"{_apiUrl}?page={currentPage}&max-per-page={_pageSize}";
+            await _semaphore.WaitAsync();
 
-                var content = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<OrderApiResponse>(content);
-       
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new OrderImporterException($"Error al recuperar los datos de la api para la url {url}: {ex.Message}");
-            }
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            _semaphore.Release();
+
+            var result = JsonConvert.DeserializeObject<OrderApiResponse>(content);
+            _log.Info($"Página {currentPage}: Recuperados {result.Content.Count} pedidos.");
+
+            return result;
         }
     }
 }

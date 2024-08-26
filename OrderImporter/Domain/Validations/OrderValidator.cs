@@ -11,8 +11,8 @@ namespace OrderImporter.Domain.Validations
                 .NotEmpty()
                 .WithMessage("No se ha indicado el Id del pedido.");
             RuleFor(o => o.Priority)
-                .IsInEnum()
-                .WithMessage(o=> $"No se ha indicado una prioridad válida: {o.Priority}");
+                .NotEmpty()
+                .WithMessage("No se ha indicado la prioridad.");
             RuleFor(o => o.Date)
                 .NotEmpty()
                 .WithMessage("No se ha indicado la fecha del pedido.");
@@ -55,21 +55,21 @@ namespace OrderImporter.Domain.Validations
             {
                 RuleFor(o => o.Totals.Revenue)
                     .Must((order, revenue) =>
-                    {                     
+                    {
                         return revenue == CalculateRevenue(order.Units);
                     })
-                    .WithMessage(order => $"El ingreso total no coincide con el cálculo. Valor actual: {order.Totals.Revenue}, Valor esperado: { CalculateRevenue(order.Units) }");
+                    .WithMessage(order => $"El ingreso total no coincide con el cálculo. Valor actual: {order.Totals.Revenue}, Valor esperado: {CalculateRevenue(order.Units)}");
 
                 RuleFor(o => o.Totals.Cost)
                     .Must((order, cost) =>
-                    {                        
+                    {
                         return cost == CalculateCost(order.Units);
                     })
                     .WithMessage(order => $"El coste total no coincide con el cálculo. Valor actual: {order.Totals.Cost}, Valor esperado: {CalculateCost(order.Units)}");
 
                 RuleFor(o => o.Totals.Profit)
                     .Must((order, profit) =>
-                    {                        
+                    {
                         return profit == CalculateProfit(order.Units);
                     })
                     .WithMessage(order =>

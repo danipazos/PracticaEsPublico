@@ -8,7 +8,7 @@ namespace OrderImporter.Infrastructure.Persistence.Entities
         public int Id { get; set; }
         public long OrderId { get; set; }
         public virtual Order Order { get; set; }
-        public string Error { get; set; }       
+        public string Error { get; set; }
     }
 
     public sealed class OrderErrorConfiguration : IEntityTypeConfiguration<OrderError>
@@ -16,8 +16,6 @@ namespace OrderImporter.Infrastructure.Persistence.Entities
         public void Configure(EntityTypeBuilder<OrderError> builder)
         {
             builder.ToTable("OrdersErrors");
-
-            builder.HasKey(o => o.Id);
 
             builder.Property(o => o.Id)
                 .ValueGeneratedOnAdd();

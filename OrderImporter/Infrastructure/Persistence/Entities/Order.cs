@@ -45,26 +45,17 @@ namespace OrderImporter.Infrastructure.Persistence.Entities
                 TotalProfit = order.Totals.Profit
             };
         }
-
-        public object GetTypeValue(string property)
-        {
-            var propertyInfo = GetType().GetProperty(property);
-
-            return propertyInfo?.GetValue(this) ?? null;
-        }    
     }
 
     public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
     {
         public void Configure(EntityTypeBuilder<Order> builder)
-        {            
+        {
             builder.ToTable("Orders");
-
-            builder.HasKey(o => o.Id);
 
             builder.Property(o => o.Id)
                 .ValueGeneratedOnAdd();
-            
+
             builder.Property(o => o.OrderId)
               .IsRequired()
               .HasColumnType("int");

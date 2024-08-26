@@ -2,10 +2,10 @@
 using OrderImporter.Infrastructure.Persistence.Repositories;
 
 namespace OrderImporter.Infrastructure.Persistence
-{   
+{
     public interface IUnitOfWork : IDisposable
     {
-        Task<int> SaveChangesAsync();
+        Task SaveChangesAsync();
 
         IRepository<Order> Orders { get; }
         IRepository<OrderError> OrderErrors { get; }

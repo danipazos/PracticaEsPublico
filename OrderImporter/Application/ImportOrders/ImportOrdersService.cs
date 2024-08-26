@@ -1,46 +1,31 @@
 ﻿using OrderImporter.Common.Exceptions;
+using OrderImporter.Common.Log;
 using OrderImporter.Domain.Models;
 using OrderImporter.Domain.Validations;
 using OrderImporter.Infrastructure.Persistence;
 using OrderImporter.Infrastructure.Persistence.Entities;
 using OrderImporter.Infrastructure.Services;
-using System.Configuration;
 
 namespace OrderImporter.Application.OrderImport
 {
-    public sealed class ImportOrdersService(IDataSource<OrderDTO> dataSource, IUnitOfWork unitOfWork) : IImportOrdersService
+    public sealed class ImportOrdersService(IDataSource<OrderDTO> dataSource, IUnitOfWork unitOfWork, ILog log) : IImportOrdersService
     {
         public async Task ImportOrdersAsync()
         {
-            int batchSize = int.Parse(ConfigurationManager.AppSettings["MaxBatchSize"]);
-            var batch = new List<Result<OrderModel>>(batchSize);
-
             try
             {
                 await foreach (var orderResponses in dataSource.GetDataAsync())
                 {
                     IEnumerable<Result<OrderModel>> orderResults = orderResponses.Select(CreateOrder);
-
-                    batch.AddRange(orderResults);
-
-                    if (batch.Count >= batchSize)
-                    {
-                        await StoreOrdersInDbAsync(batch);
-                        batch.Clear();
-                    }
-                }
-
-                if (batch.Count != 0)
-                {
-                    await StoreOrdersInDbAsync(batch);
+                    await StoreOrdersInDbAsync(orderResults);
                 }
             }
             catch (Exception ex)
-            {               
-                throw new OrderImporterException($"Error al importar los datos: { ex.Message}");
+            {
+                throw new OrderImporterException($"Error al importar los datos: {ex.Message}");
             }
         }
-        
+
         private Result<OrderModel> CreateOrder(OrderDTO orderResponse)
         {
             var validator = new OrderValidator();
@@ -52,7 +37,7 @@ namespace OrderImporter.Application.OrderImport
                 Result<OrderModel>.Failure(order, validation.Errors.Select(error => error.ErrorMessage).ToList());
         }
 
-        private async Task StoreOrdersInDbAsync(List<Result<OrderModel>> ordersToStore)
+        private async Task StoreOrdersInDbAsync(IEnumerable<Result<OrderModel>> ordersToStore)
         {
             var orders = ordersToStore.Select(order => Order.FromModel(order.Value));
             await unitOfWork.Orders.AddRangeAsync(orders);
@@ -60,11 +45,11 @@ namespace OrderImporter.Application.OrderImport
             var orderErrors = ordersToStore
                 .Where(order => order.IsFailure)
                 .SelectMany(order => order.Errors
-                    .Select(error => new OrderError { OrderId = order.Value.Id, Error = error }))
-                .ToList();
-            if (orderErrors.Count > 0)
+                    .Select(error => new OrderError { OrderId = order.Value.Id, Error = error }));
+            if (orderErrors.Any())
             {
                 await unitOfWork.OrderErrors.AddRangeAsync(orderErrors);
+                log.Info($"{orderErrors.Count()} pedidos de los {ordersToStore.Count()} pedidos a guardar tienen errores.");
             }
 
             await unitOfWork.SaveChangesAsync();

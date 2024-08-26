@@ -6,10 +6,10 @@ namespace OrderImporter.Infrastructure.Persistence.Repositories
     {
         public async Task AddRangeAsync(IEnumerable<OrderError> orderErrors)
         {
-            await context.OrderErrors.AddRangeAsync(orderErrors);
+            await context.AddRangeAsync(orderErrors);
         }
 
-        public IEnumerable<OrderError> GetAllAsync()
+        public IEnumerable<OrderError> GetAll()
         {
             return context.OrderErrors;
         }

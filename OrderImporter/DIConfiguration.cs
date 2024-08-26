@@ -1,8 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OrderImporter.Application.ExportOrders;
 using OrderImporter.Application.OrderImport;
+using OrderImporter.Application.OrdersTotals;
+using OrderImporter.Common.Configuration;
+using OrderImporter.Common.Log;
 using OrderImporter.Domain.Models;
 using OrderImporter.Infrastructure.Persistence;
 using OrderImporter.Infrastructure.Persistence.Entities;
@@ -21,6 +25,8 @@ namespace OrderImporter
             return Host.CreateDefaultBuilder(args)
                 .ConfigureServices((context, services) =>
                 {
+                    services.AddSingleton<IAppConfig>(AppConfig.Load());
+
                     services
                         .AddHttpClient<IDataSource<OrderDTO>, ApiDataSource>("OrderApiClient")
                         .AddPolicyHandler(GetRetryPolicy()).RemoveAllLoggers();
@@ -28,12 +34,21 @@ namespace OrderImporter
 
                     services.AddScoped<IImportOrdersService, ImportOrdersService>();
                     services.AddScoped<IExportOrdersService, ExportOrdersService>();
+                    services.AddScoped<IOrdersTotalService, OrdersTotalService>();
 
                     services.AddScoped<IUnitOfWork, UnitOfWork>();
                     services.AddScoped<IRepository<Order>, OrderRepository>();
                     services.AddScoped<IRepository<OrderError>, OrderErrorRepository>();
-                   
-                    services.AddDbContext<OrderContext>(options => options.UseInMemoryDatabase("OrdersDb"));
+
+                    //services.AddDbContext<OrderContext>(options=>options.UseSqlite(@"Data Source = Orders.db"));
+                    services.AddDbContext<OrderContext>(options =>
+                    {
+                        options.ConfigureWarnings(builder => builder.Ignore(InMemoryEventId.ChangesSaved));
+
+                        options.UseInMemoryDatabase("ordersDb");
+                    });
+
+                    services.AddScoped<ILog, ConsoleLog>();
                 });
         }
 
