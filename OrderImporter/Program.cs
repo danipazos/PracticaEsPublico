@@ -24,14 +24,11 @@ namespace OrderImporter
             var orderTotalsService = services.GetRequiredService<IOrdersTotalService>();
 
             try
-            {
-                log.Info("Iniciando la recuperación de pedidos...");
+            {                
                 await importService.ImportOrdersAsync();
 
-                log.Info("Iniciando la exportación de pedidos...");
                 await exportService.ExportOrdersAsync();
-
-                log.Info("Calculando totales...");
+                                
                 var orderTotals = orderTotalsService.GetTotals();
                 ShowTotalsInConsole(orderTotals);
 
@@ -52,7 +49,7 @@ namespace OrderImporter
         }
 
         private static void ShowTotalsInConsole(Dictionary<string, Dictionary<string, int>> groupedOrderByProperties)
-        {
+        {            
             foreach (var groupProperty in groupedOrderByProperties)
             {
                 Console.WriteLine(groupProperty.Key);
