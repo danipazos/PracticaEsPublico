@@ -5,7 +5,7 @@ using OrderImporter.Infrastructure.Persistence.Repositories;
 
 namespace OrderImporter.Application.OrdersTotals
 {
-    internal class OrdersTotalService(IRepository<Order> orderRepository, IAppConfig appConfig) : IOrdersTotalService
+    public sealed class OrdersTotalService(IRepository<Order> orderRepository, IAppConfig appConfig) : IOrdersTotalService
     {
         public Dictionary<string, Dictionary<string, int>> GetTotals()
         {

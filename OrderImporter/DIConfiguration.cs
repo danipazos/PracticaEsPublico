@@ -18,7 +18,7 @@ using System.Configuration;
 
 namespace OrderImporter
 {
-    public sealed class DIConfiguration
+    public static class DIConfiguration
     {
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
@@ -40,11 +40,11 @@ namespace OrderImporter
                     services.AddScoped<IRepository<Order>, OrderRepository>();
                     services.AddScoped<IRepository<OrderError>, OrderErrorRepository>();
 
-                    //services.AddDbContext<OrderContext>(options=>options.UseSqlite(@"Data Source = Orders.db"));
                     services.AddDbContext<OrderContext>(options =>
                     {
                         options.ConfigureWarnings(builder => builder.Ignore(InMemoryEventId.ChangesSaved));
 
+                        //Para el proposito de esta practica se usará una base de datos en memoria
                         options.UseInMemoryDatabase("ordersDb");
                     });
 
